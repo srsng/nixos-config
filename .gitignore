@@ -1,0 +1,19 @@
+# Nix build outputs
+result
+result-*
+
+# Editor/temporary files
+*.swp
+*.tmp
+*~
+
+# Local backup files
+*.bak
+*.backup
+configuration.nix.backup-before-ssh-*
+
+# Secrets/private keys; commit encrypted secrets only after choosing a secrets tool.
+secrets/
+*.key
+*.pem
+id_*
