@@ -6,14 +6,11 @@
   nix.settings.auto-optimise-store = true;
 
   # Faster downloads in China. Security is still enforced by Nix signatures.
-  # These mirrors serve cache.nixos.org objects signed by the official key below.
+  # These mirrors serve cache.nixos.org objects signed by Nix's built-in official key.
   nix.settings.substituters = [
     "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
     "https://mirrors.ustc.edu.cn/nix-channels/store"
     "https://cache.nixos.org/"
-  ];
-  nix.settings.trusted-public-keys = [
-    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
   ];
   nix.settings.require-sigs = true;
 

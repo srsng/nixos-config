@@ -6,6 +6,7 @@
     settings = {
       PasswordAuthentication = false; # disable password login
       KbdInteractiveAuthentication = true;
+      AllowAgentForwarding = true;
       PermitRootLogin = "no";
     };
   };
