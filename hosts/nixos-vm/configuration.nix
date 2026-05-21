@@ -7,7 +7,6 @@
     ../../modules/desktop-plasma.nix
     ../../modules/dev.nix
     ../../modules/ssh.nix
-    ../../modules/virtualbox.nix
   ];
 
   networking.hostName = "nixos";
