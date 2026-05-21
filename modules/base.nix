@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   # Nix basics
@@ -15,6 +15,9 @@
   nix.settings.require-sigs = true;
 
   nixpkgs.config.allowUnfree = true;
+
+  # Avoid globally installing package doc outputs; python312 doc fails to build.
+  environment.extraOutputsToInstall = lib.mkForce [ "man" "info" ];
 
   # Bootloader for this VirtualBox BIOS VM.
   boot.loader.grub.enable = true;
