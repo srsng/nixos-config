@@ -49,11 +49,43 @@
     extraGroups = [ "networkmanager" "wheel" ];
   };
 
+  # fonts = {
+  #   packages = with pkgs; [
+  #     noto-fonts
+  #     noto-fonts-cjk-sans
+  #     noto-fonts-cjk-serif
+  #     noto-fonts-color-emoji
+  #     sarasa-gothic
+  #     source-han-sans
+  #     source-han-serif
+  #   ];
+
+  #   fontconfig = {
+  #     enable = true;
+  #     defaultFonts = {
+  #       sansSerif = [
+  #         "Noto Sans CJK SC"
+  #         "Sarasa Gothic SC"
+  #       ];
+  #       serif = [
+  #         "Noto Serif CJK SC"
+  #         "Source Han Serif SC"
+  #       ];
+  #       monospace = [
+  #         "Sarasa Mono SC"
+  #         "Noto Sans Mono CJK SC"
+  #       ];
+  #       emoji = [
+  #         "Noto Color Emoji"
+  #       ];
+  #     };
+  #   };
+  # };
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-  
+
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
@@ -66,5 +98,9 @@
     git
     vim
     wget
+
+    # for Nvidia
+    # nvidia-dkms
+    # nvidia-utils
   ];
 }
