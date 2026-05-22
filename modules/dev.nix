@@ -14,6 +14,7 @@
     # Editors and shell basics
     vim
     nano
+    neovim
     less
     bash-completion
     which
@@ -93,8 +94,15 @@
       vscodeExtensions = with vscode-extensions; [
         jnoortheen.nix-ide
         mkhl.direnv
+        mhutchie.git-graph
+        ms-ceintl.vscode-language-pack-zh-hans
       ];
     })
+
+    # temp
+    thunar
+    swaybg
+    vis
   ];
 
   # Project-local devShell support: automatically load flake.nix/shell.nix envs.
