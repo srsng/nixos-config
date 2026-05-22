@@ -1,5 +1,10 @@
-{ config, pkgs, ... }:
-
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 {
   # Desktop
   services.xserver.enable = true;
