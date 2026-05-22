@@ -12,7 +12,6 @@
   # Development tools. Add things here as you learn/need them.
   environment.systemPackages = with pkgs; [
     # Editors and shell basics
-    vim
     nano
     neovim
     less
@@ -43,8 +42,6 @@
     tealdeer
 
     # Archive/download/transfer
-    curl
-    wget
     aria2
     rsync
     unzip
@@ -52,6 +49,7 @@
     p7zip
     zstd
     xz
+    localsend
 
     # Network/debug tools
     dnsutils
