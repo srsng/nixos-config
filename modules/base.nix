@@ -1,8 +1,16 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   # Nix basics
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   nix.settings.auto-optimise-store = true;
 
   # Faster downloads in China. Security is still enforced by Nix signatures.
@@ -17,7 +25,10 @@
   nixpkgs.config.allowUnfree = true;
 
   # Avoid globally installing package doc outputs; python312 doc fails to build.
-  environment.extraOutputsToInstall = lib.mkForce [ "man" "info" ];
+  environment.extraOutputsToInstall = lib.mkForce [
+    "man"
+    "info"
+  ];
 
   # Bootloader for this VirtualBox BIOS VM.
   boot.loader.grub.enable = true;
@@ -46,7 +57,10 @@
   users.users.srsnn = {
     isNormalUser = true;
     description = "srsnn";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
   };
 
   # fonts = {
