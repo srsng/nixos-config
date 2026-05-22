@@ -9,7 +9,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/base.nix
-    ../../modules/desktop-plasma.nix
+    ../../modules/desktop-hyprland.nix
     ../../modules/dev.nix
     ../../modules/ssh.nix
   ];

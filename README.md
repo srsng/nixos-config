@@ -14,6 +14,7 @@ Personal NixOS configuration for the VirtualBox VM `nixos-vm`.
 ├── modules/
 │   ├── base.nix
 │   ├── desktop-plasma.nix
+│   ├── desktop-hyprland.nix
 │   ├── dev.nix
 │   ├── ssh.nix
 │   └── virtualbox.nix
