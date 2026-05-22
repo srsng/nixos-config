@@ -76,7 +76,7 @@
     nh
     nil
     nixd
-    nixfmt-rfc-style
+    nixfmt
     alejandra
     statix
     deadnix
