@@ -13,10 +13,14 @@
       hyprland,
       ...
     }:
+    let
+      lib = nixpkgs.lib;
+      myvars = import ./vars/default.nix { inherit lib; };
+    in
     {
       nixosConfigurations.nixos-vm = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit inputs; };
+        specialArgs = { inherit inputs myvars; };
         modules = [
           ./hosts/nixos-vm/configuration.nix
         ];

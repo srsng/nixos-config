@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  myvars,
   ...
 }:
 
@@ -54,9 +55,9 @@
   };
 
   # User
-  users.users.srsnn = {
+  users.users.${myvars.username} = {
     isNormalUser = true;
-    description = "srsnn";
+    description = "${myvars.username}";
     extraGroups = [
       "networkmanager"
       "wheel"
