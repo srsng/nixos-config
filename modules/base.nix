@@ -55,9 +55,9 @@
   };
 
   # User
-  users.users.${myvars.username} = {
+  users.users.${myvars.user.name} = {
     isNormalUser = true;
-    description = "${myvars.username}";
+    description = "${myvars.user.name}";
     extraGroups = [
       "networkmanager"
       "wheel"

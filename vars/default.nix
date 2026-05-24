@@ -1,4 +1,8 @@
-{lib}: {
-  inherit import ./user.nix;
-  # networking = import ./networking.nix {inherit lib;};
+{ lib }:
+let
+  user = import ./user.nix { inherit lib; };
+in
+{
+  inherit user;
+  # networking = import ./networking.nix { inherit lib; };
 }

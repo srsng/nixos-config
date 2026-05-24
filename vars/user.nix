@@ -1,5 +1,5 @@
 {lib}: {
-  username = "srsnn";
-  userfullname = "srsnng";
-  useremail = "srsnng@hotmail.com";
+  name = "srsnn";
+  fullname = "srsnng";
+  email = "srsnng@hotmail.com";
 }
