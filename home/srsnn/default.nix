@@ -24,7 +24,7 @@
   ];
 
   home.sessionVariables = {
-    EDITOR = "code";
+    EDITOR = myvars.user.editor;
   };
 
   programs.home-manager.enable = true;
