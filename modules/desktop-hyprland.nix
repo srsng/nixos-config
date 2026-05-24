@@ -82,21 +82,84 @@
 
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
-  networking.firewall.allowedTCPPorts = [ 53317 ];
-  networking.firewall.allowedUDPPorts = [ 53317 ];
+  # networking.firewall.allowedTCPPorts = [ 53317 ];
+  # networking.firewall.allowedUDPPorts = [ 53317 ];
+
+  services.udisks2.enable = true;
+  services.gvfs.enable = true;
+  services.gnome.gnome-keyring.enable = true;
+  services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
+
+  hardware.bluetooth.enable = true;
+  services.blueman.enable = true;
+
+  i18n.inputMethod = {
+    enable = true;
+    type = "fcitx5";
+    fcitx5.addons = with pkgs; [
+      qt6Packages.fcitx5-chinese-addons
+      qt6Packages.fcitx5-configtool
+      fcitx5-gtk
+      fcitx5-pinyin-zhwiki
+    ];
+  };
 
   environment.systemPackages = with pkgs; [
-    kdePackages.kate
-    foot
+    # Hyprland desktop base
     waybar
+    foot
     rofi
-    hyprpaper
+    swaybg
+    mako
+    libnotify
+
+    # Auth / portal / session helpers
+    polkit_gnome
+    xdg-utils
+
+    # File management
+    kdePackages.dolphin
+    kdePackages.kio-extras
+    kdePackages.ark
+    kdePackages.gwenview
+    kdePackages.okular
+    trash-cli
+    udiskie
+
+    # Audio/network/bluetooth
+    networkmanagerapplet
+    pavucontrol
+    playerctl
+    blueman
+
+    # Clipboard/screenshot
+    wl-clipboard
+    cliphist
     grim
     slurp
-    pavucontrol
-    hyprlauncher
-    networkmanagerapplet
-    # hyprpolkitagent
-    wl-clipboard
+    swappy
+    hyprpicker
+
+    # Lock/idle/power
+    hyprlock
+    hypridle
+    brightnessctl
+
+    # Keyring/tools
+    seahorse
   ];
+
+  # environment.systemPackages = with pkgs; [
+  #   kdePackages.kate
+
+  #   hyprpaper
+  #   hyprlauncher
+  #   networkmanagerapplet
+  # hyprpolkitagent
+
+  #   # polkit
+  #   # agent
+  # udisks2
+  # ];
 }

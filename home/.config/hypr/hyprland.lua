@@ -18,7 +18,12 @@ hl.monitor({
 ---- MY PROGRAMS ----
 ---------------------
 
-require("confs/programs")
+-- Set programs that you use
+terminal    = "foot"
+fileManager = "dolphin"
+-- TODO
+-- menu        = "hyprlauncher"
+menu        = "rofi -show drun"
 
 -------------------
 ---- AUTOSTART ----
