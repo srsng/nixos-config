@@ -8,7 +8,7 @@
 {
   # Desktop
   services.xserver.enable = true;
-  services.displayManager.ly.enable  = true;
+  services.displayManager.ly.enable = true;
   services.displayManager.sddm.wayland.enable = true;
   # services.displayManager.defaultSession = "hyprland";
 

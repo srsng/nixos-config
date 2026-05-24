@@ -7,11 +7,6 @@ result-*
 *.tmp
 *~
 
-# Local backup files
-*.bak
-*.backup
-configuration.nix.backup-before-ssh-*
-
 # Secrets/private keys; commit encrypted secrets only after choosing a secrets tool.
 secrets/
 *.key

@@ -53,7 +53,7 @@
   xdg.configFile.hypr = {
       source = config.lib.file.mkOutOfStoreSymlink ./.config/hypr;
       recursive = true;
-    };
+  };
 
   home.sessionVariables = {
     EDITOR = "code";
