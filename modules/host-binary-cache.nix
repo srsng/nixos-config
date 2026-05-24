@@ -1,9 +1,75 @@
-# 用法：
-# 1. 在 VirtualBox 里创建共享文件夹，名称默认是 `nix-cache`，指向宿主机的 `H:\caches\nix-cache`。
-# 2. 启用 `srsnn.hostBinaryCache.enable = true;` 并重建系统。
-# 3. 进入虚拟机后运行 `sudo host-nix-cache-init`，再把输出的 `.pub` 内容填回 `srsnn.hostBinaryCache.publicKey`。
-# 4. 之后可以用 `sudo host-nix-cache-push /nix/store/...` 或 `sudo host-nix-cache-push-current-system` 发布产物。
-# 这个模块只负责虚拟机侧挂载、签名和推送，不会在宿主机上启动缓存服务。
+
+# Host binary cache 模块
+#
+# 这个模块用于在 VirtualBox NixOS 虚拟机中，把宿主机共享目录作为 Nix binary cache 使用。
+# 典型用途是：虚拟机负责构建 Nix store 路径，然后把构建产物导出到宿主机目录；
+# 宿主机再用简单 HTTP 服务把该目录发布出去，供本机或局域网其他 NixOS 主机作为缓存服务器使用。
+#
+# 它主要做这些事：
+# 1. 启用 VirtualBox guest 支持。
+# 2. 自动挂载宿主机共享文件夹，例如共享名 nix-cache。
+# 3. 在共享目录下创建 binary-cache 目录，用来存放 narinfo/nar 等缓存文件。
+# 4. 提供 host-nix-cache-init，用于初始化缓存目录并生成 binary cache 签名密钥。
+# 5. 提供 host-nix-cache-push / host-nix-cache-push-current-system，用于把指定 store 路径复制进宿主机缓存。
+# 6. 可选地把该缓存加入本机 nix.settings.substituters，并配置 trusted-public-keys。
+# 7. 可选地启用 post-build-hook，让本机新构建出的结果自动推送到宿主机缓存。
+#
+# 适合导入这个模块的情况：
+# - 当前 NixOS 运行在 VirtualBox 虚拟机里；
+# - 宿主机已经创建了 VirtualBox 共享文件夹；
+# - 你希望把 Nix 构建产物保存到宿主机磁盘中；
+# - 你之后打算在宿主机上启动 HTTP 服务，把这个 binary cache 提供给局域网使用。
+#
+# 基本使用流程：
+# 1. 在宿主机创建目录，例如 H:\caches\nix-cache。
+# 2. 在 VirtualBox 中添加共享文件夹，名称建议为 nix-cache，路径指向上面的宿主机目录。
+# 3. 在 NixOS 配置中 import 本模块，并启用：
+#
+#      srsnn.hostBinaryCache.enable = true;
+#
+# 4. nixos-rebuild switch 后，在虚拟机中运行：
+#
+#      sudo host-nix-cache-init
+#
+#    它会初始化缓存目录，并生成 binary cache 签名密钥。
+#
+# 5. 读取生成的 .pub 公钥文件，把其中一整行填回配置：
+#
+#      srsnn.hostBinaryCache.publicKey = "srsnn-lan-cache-1:...";
+#
+#    注意：只复制 .pub 公钥；不要公开 .key 私钥。
+#
+# 6. 再次 nixos-rebuild switch。
+#
+# 7. 之后可以手动推送构建产物：
+#
+#      sudo host-nix-cache-push /nix/store/...
+#      sudo host-nix-cache-push-current-system
+#
+# 常用可配置项：
+# - srsnn.hostBinaryCache.enable
+#     是否启用本模块。
+#
+# - srsnn.hostBinaryCache.sharedFolderName
+#     VirtualBox 共享文件夹名称，默认通常为 nix-cache。
+#
+# - srsnn.hostBinaryCache.mountPoint
+#     虚拟机内挂载点，例如 /mnt/host-nix-cache。
+#
+# - srsnn.hostBinaryCache.cacheDir
+#     虚拟机内 binary cache 目录，通常位于共享目录下，例如 /mnt/host-nix-cache/binary-cache。
+#
+# - srsnn.hostBinaryCache.publicKey
+#     binary cache 公钥。运行 host-nix-cache-init 后，把 .pub 文件里的整行内容填到这里。
+#
+# - srsnn.hostBinaryCache.autoPushBuildOutputs
+#     是否启用 post-build-hook，让本机新构建结果自动推送到宿主机缓存。
+#
+# 注意：
+# - 这个模块不会把 /nix/store 本身迁移到宿主机。
+# - 它管理的是 binary cache，也就是可被 Nix substituter 使用的缓存目录。
+# - 宿主机要作为局域网缓存服务器时，还需要额外启动 HTTP 服务来发布 cacheDir 对应目录。
+
 {
   config,
   pkgs,
