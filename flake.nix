@@ -20,9 +20,11 @@
     }:
     let
       lib = nixpkgs.lib;
-      myvars = import ./vars/default.nix { inherit lib; };
+      myvars = import ./vars { inherit lib; };
+      mylib = import ./lib { inherit lib; };
+
       system = "x86_64-linux";
-      specialArgs = { inherit inputs myvars; };
+      specialArgs = { inherit inputs myvars mylib; };
     in
     {
       nixosConfigurations.nixos-vm = nixpkgs.lib.nixosSystem {
