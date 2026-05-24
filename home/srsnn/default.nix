@@ -18,6 +18,7 @@
     ./direnv.nix
     # public
     ../.config/hypr.nix # hyprland
+    ../.config/rofi.nix # rofi
   ];
 
   home.sessionVariables = {
