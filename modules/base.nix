@@ -109,10 +109,18 @@
 
   # A small useful baseline. Keep large app choices in modules/dev.nix or desktop module.
   environment.systemPackages = with pkgs; [
+
+    # Archive/download/transfer
     curl
+    wget
+    xz
+    unzip
+    zip
+
+    # common utils
     git
     vim
-    wget
+    udiskie                           # Automounter for removable media
 
     # for Nvidia
     # nvidia-dkms

@@ -11,26 +11,14 @@
 
   home.stateVersion = "25.11";
 
-  # home.packages = with pkgs; [
-  #   localsend
-
-  #   foot
-  #   waybar
-  #   wofi
-  #   mako
-
-  #   wl-clipboard
-  #   grim
-  #   slurp
-  #   swappy
-
-  #   hyprpaper
-  #   hyprlock
-  #   hypridle
-
-  #   pavucontrol
-  #   networkmanagerapplet
-  # ];
+  imports = [
+    # personal
+    ./pkgs
+    ./shell.nix
+    ./direnv.nix
+    # public
+    ../.config/hypr.nix # hyprland
+  ];
 
   home.file = {
     # # Building this configuration will create a copy of 'dotfiles/screenrc' in
@@ -50,20 +38,9 @@
     # '';
   };
 
-  xdg.configFile.hypr = {
-      source = config.lib.file.mkOutOfStoreSymlink ./.config/hypr;
-      recursive = true;
-  };
-
   home.sessionVariables = {
     EDITOR = "code";
   };
-
-  # programs.git = {
-  #   enable = true;
-  #   userName = myvars.user.fullname;
-  #   userEmail = myvars.user.email;
-  # };
 
   # # programs.foot = {
   # #   enable = true;
@@ -72,15 +49,6 @@
   # #     size = 12;
   # #   };
   # # };
-
-  programs.bash = {
-    enable = true;
-    shellAliases = {
-      "ll" = "ls -l";
-      "la" = "ls -la";
-      ".." = "cd ..";
-    };
-  };
 
   programs.home-manager.enable = true;
 }

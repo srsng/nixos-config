@@ -125,7 +125,6 @@
     kdePackages.gwenview
     kdePackages.okular
     trash-cli
-    udiskie
 
     # Audio/network/bluetooth
     networkmanagerapplet

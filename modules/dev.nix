@@ -45,11 +45,8 @@
     # Archive/download/transfer
     aria2
     rsync
-    unzip
-    zip
     p7zip
     zstd
-    xz
     localsend
 
     # Network/debug tools
@@ -59,34 +56,6 @@
     nmap
     netcat-openbsd
     tcpdump
-
-    # Git/GitHub
-    git
-    git-lfs
-    gh
-
-    # Nix helpers
-    nix-output-monitor
-    nvd
-    nix-tree
-    nix-diff
-    nix-index
-    comma
-    nh
-    nil
-    nixd
-    nixfmt
-    alejandra
-    statix
-    deadnix
-
-    # Other language/toolchain basics
-    shellcheck
-    shfmt
-    nodejs
-    python312.out
-    uv
-    rustup
 
     # VS Code with Nix syntax highlighting/LSP support preinstalled.
     (vscode-with-extensions.override {

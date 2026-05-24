@@ -45,7 +45,7 @@
               useGlobalPkgs = true;
               useUserPackages = true;
               extraSpecialArgs = specialArgs;
-              users.${myvars.user.name} = import ./home/${myvars.user.name}.nix;
+              users.${myvars.user.name} = import ./home/${myvars.user.name};
             };
           }
         ];
