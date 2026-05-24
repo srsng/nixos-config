@@ -15,7 +15,9 @@
     # personal
     ./pkgs
     ./shell.nix
+    ./terminal.nix
     ./direnv.nix
+    ./bat.nix
     # public
     ../.config/hypr.nix # hyprland
     ../.config/rofi.nix # rofi
