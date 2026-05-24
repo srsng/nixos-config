@@ -64,38 +64,38 @@
     ];
   };
 
-  # fonts = {
-  #   packages = with pkgs; [
-  #     noto-fonts
-  #     noto-fonts-cjk-sans
-  #     noto-fonts-cjk-serif
-  #     noto-fonts-color-emoji
-  #     sarasa-gothic
-  #     source-han-sans
-  #     source-han-serif
-  #   ];
+  fonts = {
+    packages = with pkgs; [
+      noto-fonts
+      noto-fonts-cjk-sans
+      noto-fonts-cjk-serif
+      noto-fonts-color-emoji
+      sarasa-gothic
+      source-han-sans
+      source-han-serif
+    ];
 
-  #   fontconfig = {
-  #     enable = true;
-  #     defaultFonts = {
-  #       sansSerif = [
-  #         "Noto Sans CJK SC"
-  #         "Sarasa Gothic SC"
-  #       ];
-  #       serif = [
-  #         "Noto Serif CJK SC"
-  #         "Source Han Serif SC"
-  #       ];
-  #       monospace = [
-  #         "Sarasa Mono SC"
-  #         "Noto Sans Mono CJK SC"
-  #       ];
-  #       emoji = [
-  #         "Noto Color Emoji"
-  #       ];
-  #     };
-  #   };
-  # };
+    fontconfig = {
+      enable = true;
+      defaultFonts = {
+        sansSerif = [
+          "Noto Sans CJK SC"
+          "Sarasa Gothic SC"
+        ];
+        serif = [
+          "Noto Serif CJK SC"
+          "Source Han Serif SC"
+        ];
+        monospace = [
+          "Sarasa Mono SC"
+          "Noto Sans Mono CJK SC"
+        ];
+        emoji = [
+          "Noto Color Emoji"
+        ];
+      };
+    };
+  };
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
