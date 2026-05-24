@@ -8,7 +8,6 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/cache.nix
     ../../modules/host-binary-cache.nix
     ../../modules/base.nix
     ../../modules/desktop-hyprland.nix
