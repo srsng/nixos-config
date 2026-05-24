@@ -34,11 +34,4 @@ Apply:
 
 ```bash
 sudo nixos-rebuild --option experimental-features 'nix-command flakes' switch --flake ~/nixos-config#nixos-vm
-```
-
-## Notes
-
-- `/etc/nixos` remains the currently installed system configuration until you explicitly rebuild with this flake.
-- Keep host-specific hardware in `hosts/nixos-vm/hardware-configuration.nix`.
-- Keep reusable settings in `modules/`.
-- This directory has not been initialized as a Git repository yet.
+``
