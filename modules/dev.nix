@@ -12,23 +12,15 @@
   # Development tools. Add things here as you learn/need them.
   environment.systemPackages = with pkgs; [
     # Editors and shell basics
-    nano
     neovim
     emacs
-    less
-    bash-completion
-    which
-    file
-    tree
 
     # Search, navigation and inspection
     ripgrep
-    fd
+    fd # eazy, better find
     fzf
-    bat
-    eza
-    jq
-    yq-go
+    # jq  # JSON 工具
+    # yq-go # YAML 工具
     htop
     btop
     procs
@@ -56,28 +48,6 @@
     nmap
     netcat-openbsd
     tcpdump
-
-    # VS Code with Nix syntax highlighting/LSP support preinstalled.
-    (vscode-with-extensions.override {
-      vscodeExtensions = with vscode-extensions; [
-        # 语言包
-        ms-ceintl.vscode-language-pack-zh-hans
-        # 语言支持
-        jnoortheen.nix-ide
-        sumneko.lua
-        # git相关
-        mhutchie.git-graph
-        eamodio.gitlens
-        # 其他优化
-        mkhl.direnv   # 自动导入环境变量
-        usernamehw.errorlens  # 错误提示
-      ];
-    })
-
-    # temp
-    thunar
-    swaybg
-    vis
   ];
 
   # Project-local devShell support: automatically load flake.nix/shell.nix envs.

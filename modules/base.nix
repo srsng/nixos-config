@@ -120,13 +120,17 @@
     unzip
     zip
 
+    # editor
+    vim
+    nano
+
+    which
+    less # text viewer
+    tree # dir tree
+    file # file check
+    
     # common utils
     git
-    vim
     udiskie                           # Automounter for removable media
-
-    # for Nvidia
-    # nvidia-dkms
-    # nvidia-utils
   ];
 }

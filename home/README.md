@@ -16,3 +16,9 @@
 ```
 
 > inspired by github:Frost-Phoenix/nixos-config
+
+## todo
+
+check list
+- [ ] steam.nix
+- [ ] pkgs/gui.nix

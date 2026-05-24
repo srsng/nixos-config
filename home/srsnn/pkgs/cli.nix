@@ -14,7 +14,7 @@
     ripgrep                           # grep replacement
     # tldr
 
-    # ## Tools / useful cli
+    ## Tools / useful cli
     # aoc-cli                           # Advent of Code command-line tool
     # asciinema
     # asciinema-agg

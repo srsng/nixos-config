@@ -105,6 +105,8 @@
     ];
   };
 
+  # services.swaync
+
   environment.systemPackages = with pkgs; [
     # Hyprland desktop base
     waybar
