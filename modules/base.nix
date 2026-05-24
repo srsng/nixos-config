@@ -62,7 +62,10 @@
       "networkmanager"
       "wheel"
     ];
+    shell = pkgs.${lib.toLower myvars.user.shell};
   };
+
+  programs.${lib.toLower myvars.user.shell}.enable = true;
 
   fonts = {
     packages = with pkgs; [
