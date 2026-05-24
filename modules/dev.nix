@@ -14,6 +14,7 @@
     # Editors and shell basics
     nano
     neovim
+    emacs
     less
     bash-completion
     which
@@ -90,10 +91,17 @@
     # VS Code with Nix syntax highlighting/LSP support preinstalled.
     (vscode-with-extensions.override {
       vscodeExtensions = with vscode-extensions; [
-        jnoortheen.nix-ide
-        mkhl.direnv
-        mhutchie.git-graph
+        # 语言包
         ms-ceintl.vscode-language-pack-zh-hans
+        # 语言支持
+        jnoortheen.nix-ide
+        sumneko.lua
+        # git相关
+        mhutchie.git-graph
+        eamodio.gitlens
+        # 其他优化
+        mkhl.direnv   # 自动导入环境变量
+        usernamehw.errorlens  # 错误提示
       ];
     })
 
