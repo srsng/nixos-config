@@ -3,7 +3,7 @@
   ...
 }:
 {
-  # "nixos" -> "Nixos"
+  # e.g. "nixos" -> "Nixos"
   capitalize =
     s:
     let
