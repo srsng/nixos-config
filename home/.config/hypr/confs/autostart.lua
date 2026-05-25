@@ -17,11 +17,9 @@ hl.on("hyprland.start", function()
   -- 权限弹窗
   hl.exec_cmd("/run/current-system/sw/libexec/polkit-gnome-authentication-agent-1")
 
-  -- 网络托盘
-  hl.exec_cmd("nm-applet")
-
-  -- 蓝牙托盘
-  hl.exec_cmd("blueman-applet")
+  -- 托盘
+  hl.exec_cmd("nm-applet")      -- 网络
+  hl.exec_cmd("blueman-applet") -- 蓝牙
 
   -- -- 磁盘自动挂载
   hl.exec_cmd("udiskie --tray")
