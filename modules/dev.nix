@@ -21,10 +21,10 @@
     fzf
     # jq  # JSON 工具
     # yq-go # YAML 工具
-    htop
-    btop
-    procs
-    lsof
+    htop # 类top，进程管理
+    btop # 类top，系统监控大屏
+    procs # 类ps
+    lsof  # 看文件占用，端口占用等
     strace
 
     # Disk and performance helpers
