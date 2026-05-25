@@ -65,6 +65,7 @@
 
     gc = "git commit";
     gcm = "git commit -m";
+    gca = "git commit --amend --no-edit";
 
     gpl = "git pull";
     gplo = "git pull origin";

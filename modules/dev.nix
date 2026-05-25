@@ -34,12 +34,8 @@
     hyperfine
     tealdeer
 
-    # Archive/download/transfer
-    aria2
-    rsync
-    p7zip
-    zstd
-    localsend
+    # transfer
+    # localsend
 
     # Network/debug tools
     dnsutils

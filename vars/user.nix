@@ -5,7 +5,12 @@
   
   shell = "fish";
   terminal = "foot";
-  editor = "code";
+
+  editor = "hx";
+  visual = "hx";
+  sudo_editor = "nvim --clean";
+
+  browser = "firefox";
 
   ssh_authorized_keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICkNlkpg2Q3RemNZH1KtPPRd7zExMJUoKvRFQFtoHBpK srsnng@hotmail.com"

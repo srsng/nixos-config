@@ -18,6 +18,7 @@
     ./terminal.nix
     ./direnv.nix
     ./bat.nix
+    ./browser.nix
     # public
     ../.config/hypr.nix # hyprland
     ../.config/rofi.nix # rofi
@@ -25,6 +26,8 @@
 
   home.sessionVariables = {
     EDITOR = myvars.user.editor;
+    VISUAL = myvars.user.visual;
+    SUDO_EDITOR = myvars.user.sudo_editor;
   };
 
   programs.home-manager.enable = true;

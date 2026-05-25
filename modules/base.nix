@@ -34,28 +34,4 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-
-  # A small useful baseline. Keep large app choices in modules/dev.nix or desktop module.
-  environment.systemPackages = with pkgs; [
-
-    # Archive/download/transfer
-    curl
-    wget
-    xz
-    unzip
-    zip
-
-    # editor
-    vim
-    nano
-
-    which
-    less # text viewer
-    tree # dir tree
-    file # file check
-
-    # common utils
-    git
-    udiskie # Automounter for removable media
-  ];
 }
