@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  inputs,
   myvars,
   ...
 }:
@@ -19,9 +20,15 @@
     ./direnv.nix
     ./bat.nix
     ./browser.nix
+    # ./xdg-mimes.nix
+
     # public
-    ../.config/hypr.nix # hyprland
-    ../.config/rofi.nix # rofi
+    ../.config/hypr.nix
+    ../.config/rofi.nix
+    # ../.config/fastfetch.nix
+
+    # dank-material-shell
+    # inputs.dms.homeModules.dank-material-shell
   ];
 
   home.sessionVariables = {

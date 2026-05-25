@@ -8,6 +8,5 @@
 
   xdg.configFile.rofi = {
     source = config.lib.file.mkOutOfStoreSymlink ./rofi;
-    recursive = true;
   };
 }

@@ -25,7 +25,7 @@
     #     "git@github.com:frost-phoenix/".insteadOf = "fp:";
     #   };
 
-    #   core.excludesFile = "/home/${myvars.user.name}/.config/git/.gitignore";
+    #   core.excludesFile = "${config.home.homeDirectory}/.config/git/.gitignore";
     # };
   };
 
