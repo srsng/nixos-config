@@ -1,79 +1,44 @@
--- Refer to the wiki for more information.
--- https://wiki.hypr.land/Configuring/Start/
+-- This file sources other files in `hyprland` and `custom` folders
+-- You wanna add your stuff in files in `custom`
 
+-- Internal stuff --
+require("hyprland.lib")
+require("hyprland.services")
 
-------------------
----- MONITORS ----
-------------------
+-- Environment variables --
+require("hyprland.env")
+if is_file_exists(HOME .. "/.config/hypr/custom/env.lua") then
+    require("custom.env")
+end
 
--- See https://wiki.hypr.land/Configuring/Basics/Monitors/
-hl.monitor({
-    output   = "",
-    mode     = "preferred",
-    position = "auto",
-    scale    = "1",
-})
+-- Default configurations --
+require("hyprland.execs")
+require("hyprland.general")
+require("hyprland.rules")
+require("hyprland.colors")
+require("hyprland.keybinds")
 
----------------------
----- MY PROGRAMS ----
----------------------
+-- Custom configurations --
+if is_file_exists(HOME .. "/.config/hypr/custom/execs.lua") then
+    require("custom.execs")
+end
+if is_file_exists(HOME .. "/.config/hypr/custom/general.lua") then
+    require("custom.general")
+end
+if is_file_exists(HOME .. "/.config/hypr/custom/rules.lua") then
+    require("custom.rules")
+end
+if is_file_exists(HOME .. "/.config/hypr/custom/keybinds.lua") then
+    require("custom.keybinds")
+end
 
--- Set programs that you use
-terminal    = "foot"
-fileManager = "dolphin"
--- TODO
--- menu        = "hyprlauncher"
-menu        = "rofi -show drun"
+-- nwg-displays support --
+if is_file_exists(HOME .. "/.config/hypr/workspaces.lua") then
+    require("workspaces")
+end
+if is_file_exists(HOME .. "/.config/hypr/monitors.lua") then
+    require("monitors")
+end
 
--------------------
----- AUTOSTART ----
--------------------
-
-require("confs/autostart")
-
--------------------------------
----- ENVIRONMENT VARIABLES ----
--------------------------------
-
-require("confs/env_vars")
-
------------------------
------ PERMISSIONS -----
------------------------
-
-require("confs/permission")
-
------------------------
----- LOOK AND FEEL ----
------------------------
-
-require("confs/look_and_feel")
-
-----------------
-----  MISC  ----
-----------------
-
-hl.config({
-    misc = {
-        force_default_wallpaper = -1,    -- Set to 0 or 1 to disable the anime mascot wallpapers
-        disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
-    },
-})
-
----------------
----- INPUT ----
----------------
-
-require("confs/input")
-
----------------------
----- KEYBINDINGS ----
----------------------
-
-require("confs/keybinds")
-
---------------------------------
----- WINDOWS AND WORKSPACES ----
---------------------------------
-
-require("confs/windows_and_workspaces")
+-- Shell overrides --
+require("hyprland.shellOverrides.main")

@@ -34,4 +34,8 @@ Apply:
 
 ```bash
 sudo nixos-rebuild --option experimental-features 'nix-command flakes' switch --flake ~/nixos-config#nixos-vm
-``
+```
+
+## Thanks
+
+dotfiles: github:end-4/dots-hyprland (illogical-impulse)
