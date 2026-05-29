@@ -8,7 +8,7 @@
 
   editor = "hx";
   visual = "hx";
-  sudo_editor = "nvim --clean";
+  sudo_editor = "edit";
 
   browser = "firefox";
 

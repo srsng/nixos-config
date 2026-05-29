@@ -7,16 +7,16 @@
     # core tools
     # nushell # nushell
     fastfetch # 显示系统图标、版本、主题等信息
-    helix # default $EDITOR (`hx`)
+    helix # EDITOR `hx`
     # neovim # backup editor; `nvim --clean` for sensitive / privileged edits (`$SUDO_EDITOR`)
+    msedit # backup editor `edit`;
     # gnumake # Makefile
-    # just # a command runner like gnumake, but simpler
+    just # a command runner like gnumake, but simpler
     git # used by nix flakes
     # git-lfs # used by huggingface models
 
     # editor
     vim
-    nano
 
     # system monitoring
     procs # a moreden ps
