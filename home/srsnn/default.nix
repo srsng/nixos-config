@@ -15,7 +15,6 @@
   imports = [
     # personal
     ./pkgs
-    ./dconf.nix
     ./shell.nix
     ./terminal.nix
     ./direnv.nix
@@ -24,7 +23,6 @@
     # ./xdg-mimes.nix
 
     # desktop-shell
-    ./desktop-shell/ii-dotfiles.nix
 
     # public
     ../.config/hypr.nix
