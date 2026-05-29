@@ -1,29 +1,15 @@
-{ lib, ... }:
+{
+  lib,
+  myvars,
+  ...
+}:
 let
-  string = import ./string.nix {
-    inherit lib;
-  };
+  string = import ./string.nix { inherit lib; };
+  path = import ./path.nix { inherit lib myvars; };
 in
 {
   inherit string;
   inherit (string) capitalize;
-
-  # use path relative to the root of the project
-  relativeToRoot = path: lib.path.append ../. path;
-
-  # 扫描某个目录，返回其中所有 子目录 和 .nix 文件 的完整路径，但排除 default.nix。
-  scanPaths =
-    path:
-    builtins.map (f: (path + "/${f}")) (
-      builtins.attrNames (
-        lib.attrsets.filterAttrs (
-          path: _type:
-          (_type == "directory") # include directories
-          || (
-            (path != "default.nix") # ignore default.nix
-            && (lib.strings.hasSuffix ".nix" path) # include .nix files
-          )
-        ) (builtins.readDir path)
-      )
-    );
+  inherit path;
+  inherit (path) repo_xdg_home scanPaths;
 }
