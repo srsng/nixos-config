@@ -37,23 +37,28 @@
 
       system = "x86_64-linux";
       specialArgs = { inherit inputs myvars mylib; };
+      mkHost = hostName:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          inherit specialArgs;
+          modules = [
+            ./hosts/${hostName}/configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                extraSpecialArgs = specialArgs;
+                users.${myvars.user.name} = import ./home/${myvars.user.name};
+              };
+            }
+          ];
+        };
     in
     {
-      nixosConfigurations.nixos-vm = nixpkgs.lib.nixosSystem {
-        inherit system;
-        inherit specialArgs;
-        modules = [
-          ./hosts/nixos-vm/configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = specialArgs;
-              users.${myvars.user.name} = import ./home/${myvars.user.name};
-            };
-          }
-        ];
+      nixosConfigurations = {
+        nixos-vm = mkHost "nixos-vm";
+        seven-nix = mkHost "seven-nix";
       };
     };
 }

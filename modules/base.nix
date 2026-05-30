@@ -17,11 +17,6 @@
     "info"
   ];
 
-  # Bootloader for this VirtualBox BIOS VM.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/sda";
-  boot.loader.grub.useOSProber = true;
-
   # Networking
   networking.networkmanager.enable = true;
 

@@ -8,17 +8,14 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/host-binary-cache.nix
+    ./boot.nix
     ../../modules/base.nix
     ../../modules/desktop-hyprland.nix
     ../../modules/dev.nix
     ../../modules/ssh.nix
   ];
 
-  networking.hostName = "nixos";
-
-  # host-binary-cache.nix
-  srsnn.hostBinaryCache.enable = true;
+  networking.hostName = "seven-nix";
 
   # Required services
   services.geoclue2.enable = true; # For QtPositioning
