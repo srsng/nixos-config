@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, mylib, ... }:
 {
   # better cat/less
   programs.bat = {

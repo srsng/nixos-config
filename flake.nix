@@ -17,7 +17,7 @@
     };
 
     quickshell = {
-      url = "github:quickshell-mirror/quickshell/7511545ee20664e3b8b8d3322c0ffe7567c56f7a";
+      url = "github:quickshell-mirror/quickshell/7d1c9a9c6721606b129829134d6f614f015621e2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -33,7 +33,7 @@
     let
       lib = nixpkgs.lib;
       myvars = import ./vars { inherit lib; };
-      mylib = import ./lib { inherit lib; };
+      mylib = import ./lib { inherit lib myvars; };
 
       system = "x86_64-linux";
       specialArgs = { inherit inputs myvars mylib; };

@@ -33,8 +33,9 @@
         # 语言包
         ms-ceintl.vscode-language-pack-zh-hans
         # 语言支持
-        jnoortheen.nix-ide
-        sumneko.lua
+        jnoortheen.nix-ide  # nix
+        sumneko.lua  # lua
+        theqtcompany.qt-qml  # QML
         # git相关
         mhutchie.git-graph
         eamodio.gitlens

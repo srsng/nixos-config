@@ -2,6 +2,7 @@
   pkgs,
   config,
   lib,
+  mylib,
   ...
 }:
 {
@@ -20,6 +21,6 @@
   };
 
   xdg.configFile.hypr = {
-    source = config.lib.file.mkOutOfStoreSymlink ./hypr;
+    source = config.lib.file.mkOutOfStoreSymlink (mylib.repo_xdg_home "hypr");
   };
 }

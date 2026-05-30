@@ -20,6 +20,10 @@
   # host-binary-cache.nix
   srsnn.hostBinaryCache.enable = true;
 
+  # Required services
+  services.geoclue2.enable = true; # For QtPositioning
+  # services.networkmanager.enable = true; # For network management
+
   # Keep this at the release version used for the first install.
   # Do not change it just because you upgrade nixpkgs.
   system.stateVersion = "25.11";

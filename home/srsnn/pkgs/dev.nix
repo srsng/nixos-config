@@ -26,8 +26,8 @@
 
     ## Python
     uv
-    python312.out
-    python312Packages.ipython
+    # python312.out
+    # python312Packages.ipython
 
     ## rust
     rustup

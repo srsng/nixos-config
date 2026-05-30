@@ -23,16 +23,19 @@
     # ./xdg-mimes.nix
 
     # desktop-shell
+    ./desktop-shell/ii-quickshell
 
     # public
-    ../.config/hypr.nix
-    ../.config/rofi.nix
+    # ../.config/hypr.nix
+    # ../.config/rofi.nix
     # ../.config/fastfetch.nix
   ];
+
+  programs.illogical-impulse.enable = true;
 
   home.sessionVariables = {
     EDITOR = myvars.user.editor;
     VISUAL = myvars.user.visual;
     SUDO_EDITOR = myvars.user.sudo_editor;
-  };  
+  };
 }
