@@ -23,30 +23,13 @@ Item {
             verticalCenter: parent.verticalCenter
         }
 
-        ClippedFilledCircularProgress {
-            id: resourceCircProg
+        MaterialSymbol {
             Layout.alignment: Qt.AlignVCenter
-            lineWidth: Appearance.rounding.unsharpen
-            value: percentage
-            implicitSize: 20
-            colPrimary: root.warning ? Appearance.colors.colError : Appearance.colors.colOnSecondaryContainer
-            accountForLightBleeding: !root.warning
-            enableAnimation: false
-
-            Item {
-                anchors.centerIn: parent
-                width: resourceCircProg.implicitSize
-                height: resourceCircProg.implicitSize
-                
-                MaterialSymbol {
-                    anchors.centerIn: parent
-                    font.weight: Font.DemiBold
-                    fill: 1
-                    text: iconName
-                    iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.m3colors.m3onSecondaryContainer
-                }
-            }
+            horizontalAlignment: Qt.AlignHCenter
+            fill: 0
+            text: iconName
+            iconSize: Appearance.font.pixelSize.larger
+            color: Appearance.colors.colOnLayer0
         }
 
         Item {
