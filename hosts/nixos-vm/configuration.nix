@@ -3,6 +3,7 @@
   lib,
   pkgs,
   inputs,
+  myvars,
   ...
 }:
 {
@@ -16,6 +17,9 @@
   ];
 
   networking.hostName = "nixos-vm";
+
+  # 局域网缓存服务器
+  ${myvars.user.name}.localCache.enable = true;
 
   # Required services
   services.geoclue2.enable = true; # For QtPositioning
