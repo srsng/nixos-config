@@ -10,6 +10,9 @@
       material-design-icons
       font-awesome
 
+      # 
+      # google-sans-fake
+
       # nerdfonts
       # https://github.com/NixOS/nixpkgs/blob/nixos-unstable-small/pkgs/data/fonts/nerd-fonts/manifests/fonts.json
       nerd-fonts.symbols-only # symbols icon only
