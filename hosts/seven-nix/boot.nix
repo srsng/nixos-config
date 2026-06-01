@@ -1,13 +1,6 @@
 { ... }:
 {
-  # UEFI GRUB for the physical seven-nix machine.
-  boot.loader.grub = {
-    enable = true;
-    efiSupport = true;
-    device = "nodev";
-    useOSProber = true;
-    configurationLimit = 5;
-  };
-
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 }
