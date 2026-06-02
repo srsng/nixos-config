@@ -1,0 +1,18 @@
+cache_root = 'H:\caches\nix-cache\binary-cache'
+create_sample_nix_cache_info = true
+
+[http]
+bind = '127.0.0.1'
+port = 35428
+
+[limits]
+max_cache_bytes = 214748364800  # 200GB
+
+[prune]
+enabled = true
+high_watermark_bytes = 214748364800  # 200GB
+low_watermark_bytes = 193273528320   # 180GB
+order = 'oldest-first'
+
+[ftps]
+site_root_hint = 'Point your FTPS site root to the same cache_root directory.'

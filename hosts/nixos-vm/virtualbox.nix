@@ -1,4 +1,7 @@
-{ ... }:
+{ 
+  myvars,
+  ...
+}:
 {
   imports = [
     ../../modules/host-binary-cache.nix
@@ -11,7 +14,6 @@
     useOSProber = true;
   };
 
-  # Host-backed binary cache is VirtualBox-specific: enables vbox guest support
-  # and mounts the host shared folder through vboxsf.
-  srsnn.hostBinaryCache.enable = true;
+  # Enable the host-side network push workflow for this VM profile.
+  ${myvars.user.name}.hostBinaryCache.enable = true;
 }

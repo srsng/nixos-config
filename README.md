@@ -26,6 +26,17 @@ Personal NixOS configuration for the VirtualBox VM `nixos-vm` and the physical `
     └── srsnn.nix
 ```
 
+## Cache Server
+
+LAN cache server commands are available from the repository root:
+
+```text
+just cache
+just cache help
+```
+
+Details live in `scripts/cache_server/README.md`.
+
 ## Build/test
 
 Dry build without switching:

@@ -1,217 +1,226 @@
-
 # Host binary cache 模块
 #
-# 这个模块用于在 VirtualBox NixOS 虚拟机中，把宿主机共享目录作为 Nix binary cache 使用。
-# 典型用途是：虚拟机负责构建 Nix store 路径，然后把构建产物导出到宿主机目录；
-# 宿主机再用简单 HTTP 服务把该目录发布出去，供本机或局域网其他 NixOS 主机作为缓存服务器使用。
+# 这个模块用于在 NixOS 主机上：
+# 1. 本地生成/保存 binary cache signing key。
+# 2. 将构建产物先导出到本地 staging 目录。
+# 3. 通过 post-build-hook 把 OUT_PATHS 追加到队列。
+# 4. 由 systemd service/timer 异步 flush 队列，并通过 FTPS 上传到网络缓存端点。
+# 5. 提供当前系统 closure 的手动推送入口。
 #
-# 它主要做这些事：
-# 1. 启用 VirtualBox guest 支持。
-# 2. 自动挂载宿主机共享文件夹，例如共享名 nix-cache。
-# 3. 在共享目录下创建 binary-cache 目录，用来存放 narinfo/nar 等缓存文件。
-# 4. 提供 host-nix-cache-init，用于初始化缓存目录并生成 binary cache 签名密钥。
-# 5. 提供 host-nix-cache-push / host-nix-cache-push-current-system，用于把指定 store 路径复制进宿主机缓存。
-# 6. 可选地把该缓存加入本机 nix.settings.substituters，并配置 trusted-public-keys。
-# 7. 可选地启用 post-build-hook，让本机新构建出的结果自动推送到宿主机缓存。
-#
-# 适合导入这个模块的情况：
-# - 当前 NixOS 运行在 VirtualBox 虚拟机里；
-# - 宿主机已经创建了 VirtualBox 共享文件夹；
-# - 你希望把 Nix 构建产物保存到宿主机磁盘中；
-# - 你之后打算在宿主机上启动 HTTP 服务，把这个 binary cache 提供给局域网使用。
-#
-# 基本使用流程：
-# 1. 在宿主机创建目录，例如 H:\caches\nix-cache。
-# 2. 在 VirtualBox 中添加共享文件夹，名称建议为 nix-cache，路径指向上面的宿主机目录。
-# 3. 在 NixOS 配置中 import 本模块，并启用：
-#
-#      srsnn.hostBinaryCache.enable = true;
-#
-# 4. nixos-rebuild switch 后，在虚拟机中运行：
-#
-#      sudo host-nix-cache-init
-#
-#    它会初始化缓存目录，并生成 binary cache 签名密钥。
-#
-# 5. 读取生成的 .pub 公钥文件，把其中一整行填回配置：
-#
-#      srsnn.hostBinaryCache.publicKey = "srsnn-lan-cache-1:...";
-#
-#    注意：只复制 .pub 公钥；不要公开 .key 私钥。
-#
-# 6. 再次 nixos-rebuild switch。
-#
-# 7. 之后可以手动推送构建产物：
-#
-#      sudo host-nix-cache-push /nix/store/...
-#      sudo host-nix-cache-push-current-system
-#
-# 常用可配置项：
-# - srsnn.hostBinaryCache.enable
-#     是否启用本模块。
-#
-# - srsnn.hostBinaryCache.sharedFolderName
-#     VirtualBox 共享文件夹名称，默认通常为 nix-cache。
-#
-# - srsnn.hostBinaryCache.mountPoint
-#     虚拟机内挂载点，例如 /mnt/host-nix-cache。
-#
-# - srsnn.hostBinaryCache.cacheDir
-#     虚拟机内 binary cache 目录，通常位于共享目录下，例如 /mnt/host-nix-cache/binary-cache。
-#
-# - srsnn.hostBinaryCache.publicKey
-#     binary cache 公钥。运行 host-nix-cache-init 后，把 .pub 文件里的整行内容填到这里。
-#
-# - srsnn.hostBinaryCache.autoPushBuildOutputs
-#     是否启用 post-build-hook，让本机新构建结果自动推送到宿主机缓存。
-#
-# 注意：
-# - 这个模块不会把 /nix/store 本身迁移到宿主机。
-# - 它管理的是 binary cache，也就是可被 Nix substituter 使用的缓存目录。
-# - 宿主机要作为局域网缓存服务器时，还需要额外启动 HTTP 服务来发布 cacheDir 对应目录。
+# 安全边界：
+# - secret key 与 FTPS 凭据都只通过运行时路径引用，不能进入 /nix/store。
+# - public key 可公开；真正敏感的是 signing secret key。
+# - 默认采用 fail-open：上传失败不阻塞本地构建。
 
-{
-  config,
-  pkgs,
+{ config, 
   lib,
+  pkgs,
+  myvars,
   ...
 }:
 
 let
-  inherit (lib) mkIf mkMerge mkOption types;
-  cfg = config.srsnn.hostBinaryCache;
-  shellArg = lib.escapeShellArg;
+  inherit (lib) escapeShellArg mkEnableOption mkIf mkMerge mkOption types;
+  cfg = config.${myvars.user.name}.hostBinaryCache;
+  shellArg = escapeShellArg;
 
-  # 虚拟机只能通过 VirtualBox 共享文件夹看到缓存；挂载后，Nix 用本地 `file://` 访问。
-  cacheUrl = "file://${cfg.cacheDir}";
-  cacheUrlWithSecret = "${cacheUrl}?secret-key=${cfg.secretKeyFile}";
+  cacheUrl = cfg.cacheUrl;
+  stagingUrl = "file://${cfg.stagingDir}?secret-key=${cfg.secretKeyFile}";
 
-  # 每个依赖缓存的命令都会先走这个辅助脚本；它负责确认共享文件夹已挂载。
-  ensureHostCacheMount = pkgs.writeShellScriptBin "host-nix-cache-ensure" ''
-    set -euo pipefail
-
-    mount_point=${shellArg cfg.mountPoint}
-    cache_dir=${shellArg cfg.cacheDir}
-    expected_device=${shellArg cfg.sharedFolderName}
-
-    ${pkgs.coreutils}/bin/mkdir -p "$mount_point"
-
-    # systemd automount 会先暴露一层 autofs；真正访问后才会出现 vboxsf。
-    # 扫描所有匹配挂载记录。
-    is_expected_vboxsf_mount() {
-      ${pkgs.util-linux}/bin/findmnt -rno SOURCE,FSTYPE --target "$mount_point" 2>/dev/null \
-        | ${pkgs.gnugrep}/bin/grep -Fx -- "$expected_device vboxsf" >/dev/null
-    }
-
-    if ! is_expected_vboxsf_mount; then
-      ${pkgs.util-linux}/bin/mount "$mount_point" >/dev/null 2>&1 || true
-      ${pkgs.coreutils}/bin/ls "$mount_point" >/dev/null 2>&1 || true
-    fi
-
-    if ! is_expected_vboxsf_mount; then
-      echo "ERROR: $mount_point is not mounted as vboxsf." >&2
-      echo "Expected VirtualBox shared-folder name: $expected_device" >&2
-      echo "Expected Windows host path: H:\\caches\\nix-cache" >&2
-      echo "Current mount state:" >&2
-      ${pkgs.util-linux}/bin/findmnt --target "$mount_point" >&2 || true
-      exit 1
-    fi
-
-    ${pkgs.coreutils}/bin/mkdir -p "$cache_dir"
-  '';
-
-  # 初始化路径：在虚拟机里创建缓存目录并生成签名密钥。
   initHostCache = pkgs.writeShellScriptBin "host-nix-cache-init" ''
     set -euo pipefail
 
-    if [ "$(${pkgs.coreutils}/bin/id -u)" != "0" ]; then
-      echo "Run as root: sudo host-nix-cache-init" >&2
-      exit 1
-    fi
-
-    cache_dir=${shellArg cfg.cacheDir}
     key_dir=${shellArg cfg.keyDir}
     secret_key=${shellArg cfg.secretKeyFile}
     public_key=${shellArg cfg.publicKeyFile}
+    key_name=${shellArg cfg.keyName}
+    staging_dir=${shellArg cfg.stagingDir}
+    queue_file=${shellArg cfg.queueFile}
 
-    ${ensureHostCacheMount}/bin/host-nix-cache-ensure
-    ${pkgs.coreutils}/bin/install -d -m 0775 "$cache_dir"
-    ${pkgs.coreutils}/bin/install -d -m 0700 "$key_dir"
+    ${pkgs.coreutils}/bin/mkdir -p "$key_dir" "$staging_dir" "$staging_dir/nar" "$(${pkgs.coreutils}/bin/dirname "$queue_file")"
+    ${pkgs.coreutils}/bin/touch "$queue_file"
+    ${pkgs.coreutils}/bin/chmod 0700 "$key_dir"
+    ${pkgs.coreutils}/bin/chmod 0755 "$staging_dir" "$staging_dir/nar"
+    ${pkgs.coreutils}/bin/chmod 0600 "$queue_file"
 
     if [ ! -s "$secret_key" ] || [ ! -s "$public_key" ]; then
-      if [ -e "$secret_key" ] || [ -e "$public_key" ]; then
-        echo "ERROR: only one of the cache key files exists or a key file is empty." >&2
-        echo "Secret key: $secret_key" >&2
-        echo "Public key: $public_key" >&2
-        echo "Refusing to overwrite key material automatically." >&2
-        exit 1
-      fi
-
-      umask 077
-      ${pkgs.nix}/bin/nix-store --generate-binary-cache-key ${shellArg cfg.keyName} "$secret_key" "$public_key"
+      ${pkgs.nix}/bin/nix key generate-secret --key-name "$key_name" > "$secret_key"
+      ${pkgs.nix}/bin/nix key convert-secret-to-public < "$secret_key" > "$public_key"
       ${pkgs.coreutils}/bin/chmod 0600 "$secret_key"
       ${pkgs.coreutils}/bin/chmod 0644 "$public_key"
+      echo "Generated cache signing keypair: $key_name"
+    else
+      echo "Signing keypair already exists."
     fi
 
-    echo "Host binary cache directory: $cache_dir"
-    echo "Binary-cache key directory: $key_dir"
-    echo "Public key file: $public_key"
+    if [ ! -e "$staging_dir/nix-cache-info" ]; then
+      cat > "$staging_dir/nix-cache-info" <<'EOF'
+StoreDir: /nix/store
+WantMassQuery: 1
+Priority: 30
+EOF
+      ${pkgs.coreutils}/bin/chmod 0644 "$staging_dir/nix-cache-info"
+      echo "Created $staging_dir/nix-cache-info"
+    fi
+
     echo
-    echo "Next: read the .pub file and set srsnn.hostBinaryCache.publicKey to that single-line key."
+    echo "Public key file: $public_key"
+    echo "Paste this into clients if needed:"
+    ${pkgs.coreutils}/bin/cat "$public_key"
   '';
 
-  # 手动发布路径：把指定的 Nix 存储路径拷到宿主机缓存里。
-  pushHostCache = pkgs.writeShellScriptBin "host-nix-cache-push" ''
+  enqueueHostCache = pkgs.writeShellScriptBin "host-nix-cache-enqueue" ''
     set -euo pipefail
 
-    if [ "$(${pkgs.coreutils}/bin/id -u)" != "0" ]; then
-      echo "Run as root: sudo host-nix-cache-push /nix/store/..." >&2
-      exit 1
-    fi
-    if [ "$#" -eq 0 ]; then
-      echo "Usage: sudo host-nix-cache-push /nix/store/path [more paths...]" >&2
-      exit 2
-    fi
+    queue_file=${shellArg cfg.queueFile}
+    queue_dir="$(${pkgs.coreutils}/bin/dirname "$queue_file")"
+    ${pkgs.coreutils}/bin/mkdir -p "$queue_dir"
+    ${pkgs.coreutils}/bin/touch "$queue_file"
+    ${pkgs.coreutils}/bin/chmod 0600 "$queue_file" || true
 
-    secret_key=${shellArg cfg.secretKeyFile}
-    to_url=${shellArg cacheUrlWithSecret}
-
-    ${ensureHostCacheMount}/bin/host-nix-cache-ensure
-    if [ ! -s "$secret_key" ]; then
-      echo "ERROR: cache signing key is missing. Run: sudo host-nix-cache-init" >&2
-      exit 1
-    fi
-
-    ${pkgs.nix}/bin/nix copy --to "$to_url" "$@"
+    for path in "$@"; do
+      [ -n "$path" ] || continue
+      printf '%s\n' "$path" >> "$queue_file"
+    done
   '';
 
   pushCurrentSystem = pkgs.writeShellScriptBin "host-nix-cache-push-current-system" ''
     set -euo pipefail
-    exec ${pushHostCache}/bin/host-nix-cache-push /run/current-system
+    exec ${enqueueHostCache}/bin/host-nix-cache-enqueue /run/current-system
   '';
 
-  # 输出当前挂载、缓存目录和密钥文件状态，方便排障。
+  flushHostCache = pkgs.writeShellScriptBin "host-nix-cache-flush" ''
+    set -euo pipefail
+
+    queue_file=${shellArg cfg.queueFile}
+    queue_dir="$(${pkgs.coreutils}/bin/dirname "$queue_file")"
+    lock_dir=${shellArg cfg.lockDir}
+    secret_key=${shellArg cfg.secretKeyFile}
+    credentials_file=${shellArg cfg.credentialsFile}
+    staging_dir=${shellArg cfg.stagingDir}
+    host=${shellArg cfg.ftpHost}
+    port=${toString cfg.ftpPort}
+    remote_dir=${shellArg cfg.ftpRemoteDir}
+    fail_open="''${HOST_NIX_CACHE_FAIL_OPEN:-${if cfg.failOpen then "1" else "0"}}"
+
+    ${pkgs.coreutils}/bin/mkdir -p "$queue_dir" "$lock_dir" "$staging_dir" "$staging_dir/nar"
+    ${pkgs.coreutils}/bin/touch "$queue_file"
+
+    lockfile="$lock_dir/flush.lock"
+    exec 9> "$lockfile"
+    if ! ${pkgs.util-linux}/bin/flock -n 9; then
+      echo "Another flush is running; skip."
+      exit 0
+    fi
+
+    if [ ! -s "$secret_key" ]; then
+      echo "Signing secret key missing: $secret_key" >&2
+      if [ "$fail_open" = 1 ]; then exit 0; else exit 1; fi
+    fi
+    if [ ! -s "$credentials_file" ]; then
+      echo "FTPS credentials file missing: $credentials_file" >&2
+      if [ "$fail_open" = 1 ]; then exit 0; else exit 1; fi
+    fi
+
+    mapfile -t queued < "$queue_file"
+    if [ "''${#queued[@]}" -eq 0 ]; then
+      echo "Queue is empty."
+      exit 0
+    fi
+
+    declare -A seen=()
+    unique=()
+    for path in "''${queued[@]}"; do
+      [ -n "$path" ] || continue
+      if [ -e "$path" ] || [ "$path" = "/run/current-system" ]; then
+        if [ -z "''${seen[$path]+x}" ]; then
+          seen[$path]=1
+          unique+=("$path")
+        fi
+      else
+        echo "Skip missing path: $path" >&2
+      fi
+    done
+
+    if [ "''${#unique[@]}" -eq 0 ]; then
+      : > "$queue_file"
+      echo "Queue had no usable paths."
+      exit 0
+    fi
+
+    ${pkgs.nix}/bin/nix copy --to ${shellArg stagingUrl} "''${unique[@]}"
+
+    tmp_script="$(${pkgs.coreutils}/bin/mktemp)"
+    tmp_remaining="$(${pkgs.coreutils}/bin/mktemp)"
+    trap '${pkgs.coreutils}/bin/rm -f "$tmp_script" "$tmp_remaining"' EXIT
+
+    cat > "$tmp_script" <<EOF
+set ssl:verify-certificate no
+set net:max-retries 1
+set net:timeout 20
+open -u \"$(${pkgs.gnused}/bin/sed -n '1p' \"$credentials_file\")\",\"$(${pkgs.gnused}/bin/sed -n '2p' \"$credentials_file\")\" ftps://$host:$port
+mkdir -p $remote_dir
+cd $remote_dir
+mirror -R --only-newer --parallel=1 --include-glob nar/** --exclude-glob *.narinfo --exclude-glob nix-cache-info ${shellArg cfg.stagingDir} .
+put -O . ${shellArg "${cfg.stagingDir}/nix-cache-info"}
+mput -O . ${shellArg "${cfg.stagingDir}"}/*.narinfo
+bye
+EOF
+
+    if ! ${pkgs.lftp}/bin/lftp -f "$tmp_script"; then
+      echo "FTPS upload failed." >&2
+      if [ "$fail_open" = 1 ]; then exit 0; else exit 1; fi
+    fi
+
+    : > "$tmp_remaining"
+    for path in "''${unique[@]}"; do
+      printf '%s\n' "$path" >> "$tmp_remaining"
+    done
+    ${pkgs.coreutils}/bin/cp "$tmp_remaining" "$queue_file.processed"
+    : > "$queue_file"
+
+    ${pkgs.findutils}/bin/find "$staging_dir" -mindepth 1 -exec ${pkgs.coreutils}/bin/rm -rf -- {} +
+    ${pkgs.coreutils}/bin/mkdir -p "$staging_dir/nar"
+    cat > "$staging_dir/nix-cache-info" <<'EOF'
+StoreDir: /nix/store
+WantMassQuery: 1
+Priority: 30
+EOF
+    ${pkgs.coreutils}/bin/chmod 0644 "$staging_dir/nix-cache-info"
+
+    echo "Flushed ''${#unique[@]} queued paths to $host:$port$remote_dir"
+  '';
+
   showStatus = pkgs.writeShellScriptBin "host-nix-cache-status" ''
     set -euo pipefail
 
-    mount_point=${shellArg cfg.mountPoint}
-    cache_dir=${shellArg cfg.cacheDir}
+    queue_file=${shellArg cfg.queueFile}
+    staging_dir=${shellArg cfg.stagingDir}
     secret_key=${shellArg cfg.secretKeyFile}
     public_key=${shellArg cfg.publicKeyFile}
+    credentials_file=${shellArg cfg.credentialsFile}
 
-    echo "VirtualBox shared folder: ${cfg.sharedFolderName}"
-    echo "Mount point: $mount_point"
-    echo "Binary cache URL: ${cacheUrl}"
+    echo "HTTP cache URL: ${cfg.cacheUrl}"
+    echo "FTPS endpoint : ${cfg.ftpHost}:${toString cfg.ftpPort}${cfg.ftpRemoteDir}"
+    echo "Staging dir   : $staging_dir"
+    echo "Queue file    : $queue_file"
     echo
-    ${pkgs.util-linux}/bin/findmnt --target "$mount_point" || true
-    echo
-    if [ -d "$cache_dir" ]; then
-      ${pkgs.coreutils}/bin/ls -ld "$cache_dir"
-      ${pkgs.coreutils}/bin/du -sh "$cache_dir" 2>/dev/null || true
+
+    if [ -d "$staging_dir" ]; then
+      ${pkgs.coreutils}/bin/ls -ld "$staging_dir"
+      ${pkgs.coreutils}/bin/du -sh "$staging_dir" 2>/dev/null || true
     else
-      echo "Cache directory not created yet: $cache_dir"
+      echo "Staging directory missing: $staging_dir"
     fi
     echo
+
+    if [ -f "$queue_file" ]; then
+      count="$(${pkgs.coreutils}/bin/wc -l < "$queue_file" | ${pkgs.gnused}/bin/sed 's/ //g')"
+      echo "Queued paths: $count"
+    else
+      echo "Queue file not created yet."
+    fi
+
     if [ -s "$secret_key" ]; then
       echo "Secret key: present at $secret_key"
     else
@@ -222,63 +231,78 @@ let
     else
       echo "Public key: missing; run sudo host-nix-cache-init"
     fi
+    if [ -s "$credentials_file" ]; then
+      echo "Credentials: present at $credentials_file"
+    else
+      echo "Credentials: missing at $credentials_file"
+    fi
+
     if [ -n ${shellArg (if cfg.publicKey == null then "" else cfg.publicKey)} ]; then
       echo
       echo "Nix substituter: configured in the module."
     else
       echo
-      echo "Nix substituter: not configured yet; paste the .pub contents into srsnn.hostBinaryCache.publicKey."
+      echo "Nix substituter: not configured yet; paste the .pub contents into ${myvars.user.name}.hostBinaryCache.publicKey."
     fi
   '';
 
-  # 可选的构建后钩子：启用自动推送时，把新产物拷进缓存。
   postBuildHook = pkgs.writeShellScript "host-binary-cache-post-build-hook" ''
-    set -euo pipefail
-
-    secret_key=${shellArg cfg.secretKeyFile}
-    to_url=${shellArg cacheUrlWithSecret}
+    set -eu
 
     if [ -z "''${OUT_PATHS:-}" ]; then
       exit 0
     fi
-    if [ ! -s "$secret_key" ]; then
-      exit 0
-    fi
 
-    ${ensureHostCacheMount}/bin/host-nix-cache-ensure >/dev/null 2>&1 || exit 0
-    ${pkgs.nix}/bin/nix copy --to "$to_url" ''${OUT_PATHS} >/dev/null 2>&1 || true
+    ${enqueueHostCache}/bin/host-nix-cache-enqueue ''${OUT_PATHS} >/dev/null 2>&1 || true
   '';
 in
 {
-  # 把模块选项和虚拟机挂载路径、缓存密钥默认值放在一起，方便对照。
-  options.srsnn.hostBinaryCache = {
+  options.${myvars.user.name}.hostBinaryCache = {
     enable = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable the VirtualBox host-backed Nix binary cache skeleton.";
+      description = "Enable FTPS-backed Nix binary cache push workflow.";
     };
 
-    sharedFolderName = mkOption {
+    cacheUrl = mkOption {
       type = types.str;
-      default = "nix-cache";
-      description = "VirtualBox shared-folder name, not the Windows path.";
+      default = "http://192.168.56.1:35428";
+      description = "HTTP URL used by this machine as a Nix substituter.";
     };
 
-    mountPoint = mkOption {
-      type = types.str;
-      default = "/mnt/host-nix-cache";
-      description = "Guest mount point for the VirtualBox shared folder.";
+    uploadMethod = mkOption {
+      type = types.enum [ "ftps" ];
+      default = "ftps";
+      description = "Upload transport for pushing cached artifacts.";
     };
 
-    cacheDir = mkOption {
+    ftpHost = mkOption {
       type = types.str;
-      default = "/mnt/host-nix-cache/binary-cache";
-      description = "Directory used as a Nix file:// binary cache.";
+      default = "192.168.56.1";
+      description = "FTPS server hostname or IP.";
+    };
+
+    ftpPort = mkOption {
+      type = types.port;
+      default = 21;
+      description = "FTPS control port.";
+    };
+
+    ftpRemoteDir = mkOption {
+      type = types.str;
+      default = "/";
+      description = "Remote FTPS directory that maps to the HTTP cache root.";
+    };
+
+    credentialsFile = mkOption {
+      type = types.str;
+      default = "/run/secrets/nix-cache-ftps";
+      description = "Runtime credentials file: line1=username, line2=password.";
     };
 
     keyName = mkOption {
       type = types.str;
-      default = "srsnn-lan-cache-1";
+      default = "${myvars.user.name}-lan-cache-1";
       description = "Name embedded in the generated binary-cache public key.";
     };
 
@@ -290,68 +314,105 @@ in
 
     secretKeyFile = mkOption {
       type = types.str;
-      default = "/var/lib/nix-cache-keys/srsnn-lan-cache-1.sec";
-      description = "Secret signing key used only by root-side cache push commands.";
+      default = "/var/lib/nix-cache-keys/${myvars.user.name}-lan-cache-1.sec";
+      description = "Secret signing key used only by root-side staging/flush commands.";
     };
 
     publicKeyFile = mkOption {
       type = types.str;
-      default = "/var/lib/nix-cache-keys/srsnn-lan-cache-1.pub";
+      default = "/var/lib/nix-cache-keys/${myvars.user.name}-lan-cache-1.pub";
       description = "Public signing key generated by host-nix-cache-init.";
     };
 
     publicKey = mkOption {
       type = types.nullOr types.str;
       default = null;
-      description = "Public key trusted by this machine for the host binary cache.";
+      description = "Public key trusted by this machine for the LAN binary cache.";
+    };
+
+    stagingDir = mkOption {
+      type = types.str;
+      default = "/var/lib/host-binary-cache/staging";
+      description = "Local file:// cache staging directory before FTPS upload.";
+    };
+
+    queueFile = mkOption {
+      type = types.str;
+      default = "/var/lib/host-binary-cache/queue/pending.txt";
+      description = "Queue file storing out paths waiting to be flushed.";
+    };
+
+    lockDir = mkOption {
+      type = types.str;
+      default = "/var/lib/host-binary-cache/lock";
+      description = "Directory used for flush lock files.";
+    };
+
+    flushInterval = mkOption {
+      type = types.str;
+      default = "5min";
+      description = "systemd timer interval for background queue flush.";
     };
 
     autoPushBuildOutputs = mkOption {
       type = types.bool;
       default = false;
-      description = "If true, try to copy new local build outputs into the host binary cache after each build.";
+      description = "If true, append new local build outputs to the upload queue after each build.";
+    };
+
+    failOpen = mkOption {
+      type = types.bool;
+      default = true;
+      description = "If true, upload failures never fail the build path or timer invocation.";
     };
   };
 
-  # 只有启用模块时，才一起装配虚拟机挂载、辅助脚本和可选的缓存配置。
   config = mkIf cfg.enable (mkMerge [
     {
-      virtualisation.virtualbox.guest.enable = true;
-
-      fileSystems.${cfg.mountPoint} = {
-        device = cfg.sharedFolderName;
-        fsType = "vboxsf";
-        options = [
-          "rw"
-          "uid=0"
-          "gid=0"
-          "dmode=0775"
-          "fmode=0664"
-          "umask=0002"
-          "x-systemd.automount"
-          "noauto"
-          "nofail"
-        ];
-        neededForBoot = false;
-      };
+      assertions = [
+        {
+          assertion = cfg.uploadMethod == "ftps";
+          message = "${myvars.user.name}.hostBinaryCache.uploadMethod currently only supports ftps.";
+        }
+      ];
 
       systemd.tmpfiles.rules = [
-        "d ${cfg.mountPoint} 0755 root root -"
         "d ${cfg.keyDir} 0700 root root -"
+        "d ${cfg.stagingDir} 0755 root root -"
+        "d ${cfg.stagingDir}/nar 0755 root root -"
+        "d ${builtins.dirOf cfg.queueFile} 0700 root root -"
+        "d ${cfg.lockDir} 0700 root root -"
       ];
 
       environment.systemPackages = [
-        ensureHostCacheMount
         initHostCache
-        pushHostCache
         pushCurrentSystem
+        flushHostCache
         showStatus
       ];
+
+      systemd.services.host-nix-cache-flush = {
+        description = "Flush queued Nix binary cache artifacts to the FTPS endpoint";
+        serviceConfig = {
+          Type = "oneshot";
+          User = "root";
+        };
+        path = [ pkgs.coreutils pkgs.findutils pkgs.gawk pkgs.gnused pkgs.lftp pkgs.nix pkgs.util-linux ];
+        script = ''
+          exec ${flushHostCache}/bin/host-nix-cache-flush
+        '';
+      };
+
+      systemd.timers.host-nix-cache-flush = {
+        description = "Periodic background flush for queued Nix cache artifacts";
+        wantedBy = [ "timers.target" ];
+        timerConfig = {
+          OnBootSec = "2min";
+          OnUnitActiveSec = cfg.flushInterval;
+          Unit = "host-nix-cache-flush.service";
+        };
+      };
     }
-    (mkIf (cfg.publicKey != null) {
-      nix.settings.substituters = [ cacheUrl ];
-      nix.settings."trusted-public-keys" = [ cfg.publicKey ];
-    })
     (mkIf cfg.autoPushBuildOutputs {
       nix.settings."post-build-hook" = "${postBuildHook}";
     })
