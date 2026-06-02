@@ -266,7 +266,7 @@ in
 
     cacheUrl = mkOption {
       type = types.str;
-      default = "http://192.168.56.1:35428";
+      default = "http://192.168.31.194:35428";
       description = "HTTP URL used by this machine as a Nix substituter.";
     };
 
@@ -278,7 +278,7 @@ in
 
     ftpHost = mkOption {
       type = types.str;
-      default = "192.168.56.1";
+      default = "192.168.31.194";
       description = "FTPS server hostname or IP.";
     };
 
