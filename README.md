@@ -7,6 +7,7 @@ Personal NixOS configuration for the VirtualBox VM `nixos-vm` and the physical `
 ```text
 .
 ├── flake.nix
+├── dotfiles/  # some dotfiles from other repo
 ├── hosts/
 │   ├── nixos-vm/
 │   │   ├── configuration.nix
@@ -15,15 +16,10 @@ Personal NixOS configuration for the VirtualBox VM `nixos-vm` and the physical `
 │       ├── boot.nix
 │       ├── configuration.nix
 │       └── hardware-configuration.nix
-├── modules/
-│   ├── base.nix
-│   ├── desktop-plasma.nix
-│   ├── desktop-hyprland.nix
-│   ├── dev.nix
-│   ├── ssh.nix
-│   └── virtualbox.nix
+├── modules/  # public for all host/user
 └── home/
-    └── srsnn.nix
+    ├── README.md
+    └── srsnn/  # some user, check README.md inside home/
 ```
 
 ## Cache Server
@@ -49,12 +45,6 @@ Apply with the LAN cache first:
 
 ```bash
 ./scripts/switch.bash seven-nix
-```
-
-Apply with only the LAN cache, useful when external caches time out:
-
-```bash
-./scripts/switch.bash seven-nix lan-only
 ```
 
 Use `#nixos-vm` instead of `#seven-nix` for the VM host.
