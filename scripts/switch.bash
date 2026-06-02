@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   echo "Usage: $0 <host> [cache-mode]"
-  echo "  cache-mode: true|false|lan-only (default: true)"
+  echo "  cache-mode: true|false|lan-only|no-lan (default: true)"
   echo "Example: $0 seven-nix"
   echo "Example: $0 seven-nix lan-only"
   echo "Example: $0 seven-nix false"
@@ -26,6 +26,10 @@ case "$cache_mode" in
   true)
     substituters="$lan_cache $substituters"
     trusted_public_keys="$lan_cache_key $trusted_public_keys"
+    ;;
+  no-lan)
+    # substituters="$substituters"
+    # trusted_public_keys="$trusted_public_keys"
     ;;
   lan-only)
     substituters="$lan_cache"
