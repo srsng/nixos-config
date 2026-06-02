@@ -28,13 +28,16 @@ let
 
   xdg_configs_root = "./.config";
   xdg_configs = {
+    # usage: target_file_path = local_file_path
     "chrome-flags.conf" = "${xdg_configs_root}/chrome-flags.conf";
     "code-flags.conf" = "${xdg_configs_root}/code-flags.conf";
     "darklyrc" = "${xdg_configs_root}/darklyrc";
     "dolphinrc" = "${xdg_configs_root}/dolphinrc";
-    "fish/auto-Hypr.fish" = "${xdg_configs_root}/fish/auto-Hypr.fish";
-    # "fish/config.fish" = "${xdg_configs_root}/fish/config.fish";
-    "fish/fish_variables" = "${xdg_configs_root}/fish/fish_variables";
+    "fish/auto-Hypr.fish" = "${xdg_configs_root}/fish/auto-Hypr.fish";    
+    # as shared config
+    "fish/conf.d/ii-config.fish" = "${xdg_configs_root}/fish/config.fish";
+    # init fish_variables by .fish
+    "fish/conf.d/ii-init-vars.fish" = "${xdg_configs_root}/fish/ii-init-vars.fish";
     "fontconfig/fonts.conf" = "${xdg_configs_root}/fontconfig/fonts.conf";
     "foot" = "${xdg_configs_root}/foot";
     "fuzzel" = "${xdg_configs_root}/fuzzel";
@@ -56,7 +59,6 @@ let
   };
 
   xdg_configs_force = {
-    "fish/config.fish" = "${xdg_configs_root}/fish/config.fish";
   };
 
   local_files_root = "./.local";
