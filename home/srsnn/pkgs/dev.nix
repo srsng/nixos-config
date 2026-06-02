@@ -14,7 +14,7 @@
 
     ## lint/checker
     shellcheck
-    
+
     # ## C / C++
     # gcc
     # gdb
@@ -34,5 +34,24 @@
 
     ## javascript
     nodejs
+
+    ## Lisp / Scheme
+    guile # GNU Guile
+    guile-lsp-server # Helix scheme LSP
+    racket # Racket runtime/toolchain
+    chez # Chez Scheme
+    chickenPackages_5.chicken # CHICKEN Scheme
+    gambit # Gambit Scheme
+    chibi # Chibi Scheme
+    rlwrap # nicer REPL editing/history
   ];
+
+  xdg.configFile."helix/languages.toml".text = ''
+    [language-server.guile-lsp-server]
+    command = "guile-lsp-server"
+
+    [[language]]
+    name = "scheme"
+    language-servers = ["guile-lsp-server"]
+  '';
 }
