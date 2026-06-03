@@ -38,6 +38,7 @@
     ## Lisp / Scheme
     guile # GNU Guile
     guile-lsp-server # Helix scheme LSP
+    schemat # Scheme formatter for Helix
     racket # Racket runtime/toolchain
     chez # Chez Scheme
     chickenPackages_5.chicken # CHICKEN Scheme
@@ -54,5 +55,6 @@
     [[language]]
     name = "scheme"
     language-servers = ["guile-lsp-server"]
+    formatter = { command = "schemat" }
   '';
 }
