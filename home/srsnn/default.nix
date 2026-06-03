@@ -18,6 +18,7 @@
     ./shell.nix
     ./terminal.nix
     ./direnv.nix
+    ./git.nix
     ./bat.nix
     ./browser.nix
     # ./xdg-mimes.nix
