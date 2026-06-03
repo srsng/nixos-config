@@ -26,6 +26,9 @@
     #   ## Level editor
     #   ldtk
     #   tiled
+    
+    # transfer
+    # localsend
 
     # VS Code with Nix syntax highlighting/LSP support preinstalled.
     (vscode-with-extensions.override {

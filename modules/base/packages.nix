@@ -20,7 +20,9 @@
 
     # system monitoring
     procs # a moreden ps
-    btop
+    btop # 类top，系统监控大屏
+    htop # 类top，进程管理
+
 
     # Archive
     xz
@@ -38,8 +40,8 @@
     gnused # GNU sed, very powerful(mainly for replacing text in files)
     sad # CLI search and replace, just like sed, but with diff preview.
 
-    jq # A lightweight and flexible command-line JSON processor
-    yq-go # yaml processor https://github.com/mikefarah/yq
+    jq # JSON 工具 A lightweight and flexible command-line JSON processor
+    yq-go # YAML 工具 yaml processor https://github.com/mikefarah/yq
     jc # converts the output of popular cli tools & file-types to JSON, YAML
 
     # Interactively filter its input using fuzzy searching, not limit to filenames.
@@ -72,6 +74,9 @@
     iperf3 # network performance test
     hyperfine # command-line benchmarking tool
     tcpdump # network sniffer
+    # inetutils
+    # iproute2
+    # netcat-openbsd
 
     # file transfer
     rsync
@@ -94,7 +99,7 @@
     # system call monitoring
     strace # system call monitoring
     ltrace # library call monitoring
-    lsof # list open files
+    lsof # 看文件占用，端口占用等 list open files
 
     # ebpf related tools
     # https://github.com/bpftrace/bpftrace
@@ -127,4 +132,14 @@
   # BCC - Tools for BPF-based Linux IO analysis, networking, monitoring, and more
   # https://github.com/iovisor/bcc
   programs.bcc.enable = true;
+
+  # Let VS Code Remote-SSH's downloaded server run on NixOS.
+  programs.nix-ld = {
+    enable=true;
+    libraries = with pkgs; [
+      stdenv.cc.cc
+      zlib
+      openssl
+    ];
+  };
 }

@@ -46,6 +46,7 @@
     rlwrap # nicer REPL editing/history
   ];
 
+  # TODO: helix config
   xdg.configFile."helix/languages.toml".text = ''
     [language-server.guile-lsp-server]
     command = "guile-lsp-server"

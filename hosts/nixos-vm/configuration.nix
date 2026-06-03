@@ -10,10 +10,8 @@
   imports = [
     ./hardware-configuration.nix
     ./virtualbox.nix
-    ../../modules/base.nix
+    ../../modules/base
     ../../modules/desktop-hyprland.nix
-    ../../modules/dev.nix
-    ../../modules/ssh.nix
   ];
 
   networking.hostName = "nixos-vm";

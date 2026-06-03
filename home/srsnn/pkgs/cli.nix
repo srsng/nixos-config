@@ -40,7 +40,6 @@
     # ttyper                            # cli typing test
 
     # ## Monitoring / fetch
-    # htop
     # onefetch                          # fetch utility for git repo
     # wavemon                           # monitoring for wireless network devices
 
